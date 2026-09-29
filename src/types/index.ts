@@ -24,3 +24,17 @@ export interface Product {
   inStock: boolean;
   categoryId: number;
 }
+
+export interface RegisterPayload {
+  name: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+  business_name: string;
+  phone: string;
+  vat_number: string;
+  commercial_registration: string;
+}
+
+/** Field name -> first error message. Used for inline form errors. */
+export type FieldErrors = Partial<Record<keyof RegisterPayload, string>>;
