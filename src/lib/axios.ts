@@ -12,6 +12,15 @@ export const api = axios.create({
   },
 });
 
+// Attach the bearer token to every request when present.
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("auth_token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 /** Shape of Laravel's 422 validation error response. */
 export interface LaravelValidationError {
   message: string;
@@ -21,7 +30,7 @@ export interface LaravelValidationError {
 /** Type guard for axios errors with a Laravel validation body. */
 export function isValidationError(
   error: unknown,
-): error is { response: { status: number; data: LaravelValidationError } } {
+): error is { response: { status: 422; data: LaravelValidationError } } {
   return (
     axios.isAxiosError(error) &&
     error.response?.status === 422 &&
@@ -29,4 +38,11 @@ export function isValidationError(
     error.response.data !== null &&
     "errors" in error.response.data
   );
+}
+
+/** Type guard for a 401 response carrying an optional `message`. */
+export function isUnauthorized(
+  error: unknown,
+): error is { response: { status: 401; data: { message?: string } } } {
+  return axios.isAxiosError(error) && error.response?.status === 401;
 }
