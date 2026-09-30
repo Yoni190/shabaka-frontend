@@ -3,9 +3,7 @@ import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
 import FormField from "../../components/ui/FormField";
 import { api, isValidationError } from "../../lib/axios";
-import type { AuthUser, FieldErrors, RegisterPayload } from "../../types";
-
-const currentUser: AuthUser | null = null;
+import type { FieldErrors, RegisterPayload } from "../../types";
 
 const emptyForm: RegisterPayload = {
   name: "",
@@ -72,7 +70,7 @@ export default function RegisterPage() {
   if (success) {
     return (
       <div className="flex min-h-screen flex-col bg-slate-50">
-        <Navbar user={currentUser} cartCount={0} />
+        <Navbar cartCount={0} />
         <main className="flex flex-1 items-center justify-center px-4 py-16">
           <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
             <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
@@ -110,7 +108,7 @@ export default function RegisterPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50">
-      <Navbar user={currentUser} cartCount={0} />
+      <Navbar cartCount={0} />
 
       <main className="flex-1">
         <div className="mx-auto grid max-w-7xl gap-12 px-4 py-12 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-16 lg:px-8 lg:py-16">

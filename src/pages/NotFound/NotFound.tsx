@@ -1,17 +1,10 @@
 import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
-import type { AuthUser } from "../../types";
-
-/**
- * Placeholder auth state — same pattern as HomePage.
- * Swap for real auth state once authentication exists.
- */
-const currentUser: AuthUser | null = null;
 
 export default function NotFoundPage() {
   return (
     <div className="flex min-h-screen flex-col bg-slate-50">
-      <Navbar user={currentUser} cartCount={0} />
+      <Navbar cartCount={0} />
 
       <main className="flex flex-1 items-center justify-center px-4 py-16 sm:px-6 lg:px-8">
         <div className="w-full max-w-xl text-center">

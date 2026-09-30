@@ -9,13 +9,8 @@ import ProductCard, {
   ProductCardSkeleton,
 } from "../../components/products/ProductCard";
 import { mockCategories, mockFeaturedProducts } from "../../data/mockData";
-import type { AuthUser, Product } from "../../types";
+import type { Product } from "../../types";
 
-/**
- * Placeholder auth state. Once real authentication exists, this comes from
- * the auth context / API instead — the Navbar already handles both cases.
- */
-const currentUser: AuthUser | null = null;
 
 export default function HomePage() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
@@ -38,7 +33,7 @@ export default function HomePage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50">
-      <Navbar user={currentUser} cartCount={0} />
+      <Navbar cartCount={0} />
 
       <main className="flex-1">
         <HeroSection />
