@@ -1,9 +1,7 @@
 import { useState } from "react";
-import type { AuthUser } from "../../types";
+import { useAuth } from "../../hooks/useAuth";
 
 interface NavbarProps {
-  /** Null when the visitor is not authenticated. */
-  user: AuthUser | null;
   cartCount?: number;
 }
 
@@ -13,18 +11,24 @@ const navLinks = [
 ];
 
 const accountLinks = [
+  { label: "Account", href: "/account" },
   { label: "My Orders", href: "/account/orders" },
   { label: "Quotes", href: "/account/quotes" },
-  { label: "Account Settings", href: "/account" },
 ];
 
-export default function Navbar({ user, cartCount = 0 }: NavbarProps) {
+export default function Navbar({ cartCount = 0 }: NavbarProps) {
+  const { user, isAuthenticated, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
 
   const closeMenus = () => {
     setIsMobileMenuOpen(false);
     setIsAccountMenuOpen(false);
+  };
+
+  const handleLogout = async () => {
+    closeMenus();
+    await logout();
   };
 
   return (
@@ -112,7 +116,7 @@ export default function Navbar({ user, cartCount = 0 }: NavbarProps) {
           </a>
 
           {/* Desktop auth */}
-          {user ? (
+          {isAuthenticated && user ? (
             <div className="relative hidden lg:block">
               <button
                 type="button"
@@ -138,9 +142,12 @@ export default function Navbar({ user, cartCount = 0 }: NavbarProps) {
                       {user.name}
                     </p>
                     <p className="text-xs text-slate-500">
-                      {user.role === "admin" ? "Administrator" : "Business customer"}
+                      {user.role === "admin"
+                        ? "Administrator"
+                        : "Business customer"}
                     </p>
                   </div>
+
                   {accountLinks.map((link) => (
                     <a
                       key={link.href}
@@ -152,12 +159,14 @@ export default function Navbar({ user, cartCount = 0 }: NavbarProps) {
                       {link.label}
                     </a>
                   ))}
+
                   <button
                     type="button"
                     role="menuitem"
-                    className="block w-full px-4 py-2 text-left text-sm text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
+                    onClick={handleLogout}
+                    className="block w-full border-t border-slate-100 px-4 py-2 text-left text-sm text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
                   >
-                    Sign out
+                    Logout
                   </button>
                 </div>
               )}
@@ -232,8 +241,15 @@ export default function Navbar({ user, cartCount = 0 }: NavbarProps) {
           </nav>
 
           <div className="mt-4 border-t border-slate-200 pt-4">
-            {user ? (
+            {isAuthenticated && user ? (
               <div className="flex flex-col gap-2">
+                <div className="px-3 pb-2">
+                  <p className="truncate text-sm font-medium text-slate-900">
+                    {user.name}
+                  </p>
+                  <p className="text-xs text-slate-500">Business customer</p>
+                </div>
+
                 {accountLinks.map((link) => (
                   <a
                     key={link.href}
@@ -244,11 +260,13 @@ export default function Navbar({ user, cartCount = 0 }: NavbarProps) {
                     {link.label}
                   </a>
                 ))}
+
                 <button
                   type="button"
+                  onClick={handleLogout}
                   className="rounded-lg px-3 py-2.5 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100"
                 >
-                  Sign out
+                  Logout
                 </button>
               </div>
             ) : (
@@ -276,7 +294,7 @@ export default function Navbar({ user, cartCount = 0 }: NavbarProps) {
   );
 }
 
-/* ---------- Local icons (no icon dependency needed) ---------- */
+/* ---------- Local icons ---------- */
 
 interface IconProps {
   className?: string;
@@ -284,16 +302,7 @@ interface IconProps {
 
 function SearchIcon({ className }: IconProps) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
       <circle cx="11" cy="11" r="7" />
       <path d="m20 20-3.5-3.5" />
     </svg>
@@ -302,16 +311,7 @@ function SearchIcon({ className }: IconProps) {
 
 function CartIcon({ className }: IconProps) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
       <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
       <circle cx="9" cy="21" r="1" />
       <circle cx="20" cy="21" r="1" />
@@ -321,16 +321,7 @@ function CartIcon({ className }: IconProps) {
 
 function MenuIcon({ className }: IconProps) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
       <path d="M3 6h18M3 12h18M3 18h18" />
     </svg>
   );
@@ -338,16 +329,7 @@ function MenuIcon({ className }: IconProps) {
 
 function CloseIcon({ className }: IconProps) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
       <path d="M18 6 6 18M6 6l12 12" />
     </svg>
   );
@@ -355,16 +337,7 @@ function CloseIcon({ className }: IconProps) {
 
 function ChevronDownIcon({ className }: IconProps) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
       <path d="m6 9 6 6 6-6" />
     </svg>
   );
