@@ -38,3 +38,10 @@ export interface RegisterPayload {
 
 /** Field name -> first error message. Used for inline form errors. */
 export type FieldErrors = Partial<Record<keyof RegisterPayload, string>>;
+
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+export type LoginFieldErrors = Partial<Record<keyof LoginPayload, string>>;
