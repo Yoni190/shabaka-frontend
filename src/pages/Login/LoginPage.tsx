@@ -1,7 +1,5 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router";
-import Navbar from "../../components/layout/Navbar";
-import Footer from "../../components/layout/Footer";
 import FormField from "../../components/ui/FormField";
 import { isUnauthorized, isValidationError } from "../../lib/axios";
 import { useAuth } from "../../hooks/useAuth";
@@ -62,88 +60,82 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50">
-      <Navbar cartCount={0} />
+    <div className="flex flex-1 items-center justify-center px-4 py-16 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md">
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm sm:p-10">
+          <p className="text-xs font-semibold uppercase tracking-wider text-blue-600">
+            Business account
+          </p>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">
+            Sign in
+          </h1>
+          <p className="mt-2 text-sm text-slate-600">
+            Access account pricing, orders and invoices.
+          </p>
 
-      <main className="flex flex-1 items-center justify-center px-4 py-16 sm:px-6 lg:px-8">
-        <div className="w-full max-w-md">
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm sm:p-10">
-            <p className="text-xs font-semibold uppercase tracking-wider text-blue-600">
-              Business account
-            </p>
-            <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">
-              Sign in
-            </h1>
-            <p className="mt-2 text-sm text-slate-600">
-              Access account pricing, orders and invoices.
-            </p>
+          {formError && (
+            <div
+              role="alert"
+              className="mt-6 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
+            >
+              {formError}
+            </div>
+          )}
 
-            {formError && (
-              <div
-                role="alert"
-                className="mt-6 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
-              >
-                {formError}
-              </div>
-            )}
+          <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
+            <FormField
+              id="email"
+              label="Work email"
+              type="email"
+              value={form.email}
+              onChange={updateField("email")}
+              error={fieldErrors.email}
+              required
+              autoComplete="email"
+              placeholder="jane@company.com"
+            />
 
-            <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
+            <div>
               <FormField
-                id="email"
-                label="Work email"
-                type="email"
-                value={form.email}
-                onChange={updateField("email")}
-                error={fieldErrors.email}
+                id="password"
+                label="Password"
+                type="password"
+                value={form.password}
+                onChange={updateField("password")}
+                error={fieldErrors.password}
                 required
-                autoComplete="email"
-                placeholder="jane@company.com"
+                autoComplete="current-password"
               />
-
-              <div>
-                <FormField
-                  id="password"
-                  label="Password"
-                  type="password"
-                  value={form.password}
-                  onChange={updateField("password")}
-                  error={fieldErrors.password}
-                  required
-                  autoComplete="current-password"
-                />
-                <div className="mt-2 text-right">
-                  <a
-                    href="/forgot-password"
-                    className="text-xs font-medium text-blue-600 transition hover:text-blue-700"
-                  >
-                    Forgot password?
-                  </a>
-                </div>
+              <div className="mt-2 text-right">
+                <a
+                  href="/forgot-password"
+                  className="text-xs font-medium text-blue-600 transition hover:text-blue-700"
+                >
+                  Forgot password?
+                </a>
               </div>
+            </div>
 
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
-              >
-                {isSubmitting ? "Signing in…" : "Sign in"}
-              </button>
-            </form>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+            >
+              {isSubmitting ? "Signing in…" : "Sign in"}
+            </button>
+          </form>
 
-            <p className="mt-8 text-center text-sm text-slate-600">
-              New to Shabaka?{" "}
-              <a
-                href="/register"
-                className="font-semibold text-blue-600 transition hover:text-blue-700"
-              >
-                Register your business
-              </a>
-            </p>
-          </div>
+          <p className="mt-8 text-center text-sm text-slate-600">
+            New to Shabaka?{" "}
+            <a
+              href="/register"
+              className="font-semibold text-blue-600 transition hover:text-blue-700"
+            >
+              Register your business
+            </a>
+          </p>
         </div>
-      </main>
-
-      <Footer />
+      </div>
     </div>
   );
 }
