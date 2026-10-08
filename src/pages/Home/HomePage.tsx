@@ -9,7 +9,7 @@ import ProductCard, {
   ProductCardSkeleton,
 } from "../../components/products/ProductCard";
 import { getHomeCategories } from "../../api/categories";
-import { mockFeaturedProducts } from "../../data/mockData";
+import { getHomeProducts } from "../../api/products";
 import type { Category, Product } from "../../types";
 
 export default function HomePage() {
@@ -45,18 +45,36 @@ export default function HomePage() {
     };
   }, []);
 
-  /* ---------- Featured products (still mocked) ---------- */
+  /* ---------- Featured products (API) ---------- */
 
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [productsError, setProductsError] = useState<string | null>(null);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setFeaturedProducts(mockFeaturedProducts);
-      setIsLoadingProducts(false);
-    }, 300);
+    let cancelled = false;
 
-    return () => window.clearTimeout(timer);
+    const load = async () => {
+      setIsLoadingProducts(true);
+      setProductsError(null);
+      try {
+        const data = await getHomeProducts();
+        if (!cancelled) setFeaturedProducts(data);
+      } catch {
+        if (!cancelled) {
+          setProductsError(
+            "Unable to load featured products. Please try again later.",
+          );
+        }
+      } finally {
+        if (!cancelled) setIsLoadingProducts(false);
+      }
+    };
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const handleAddToCart = (product: Product) => {
@@ -66,6 +84,7 @@ export default function HomePage() {
   /* ---------- Render ---------- */
 
   const hasCategories = categories.length > 0;
+  const hasFeaturedProducts = featuredProducts.length > 0;
 
   return (
     <div className="flex-1">
@@ -138,7 +157,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured products (still using mockFeaturedProducts) */}
+      {/* Featured products */}
       <section className="border-b border-slate-200 bg-slate-50">
         <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
           <div className="flex flex-wrap items-end justify-between gap-4">
@@ -162,32 +181,48 @@ export default function HomePage() {
           </div>
 
           <div className="mt-8">
-            {isLoadingProducts ? (
+            {isLoadingProducts && (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 {Array.from({ length: 4 }).map((_, index) => (
                   <ProductCardSkeleton key={index} />
                 ))}
               </div>
-            ) : featuredProducts.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
-                <p className="text-sm font-semibold text-slate-900">
-                  No featured products available
+            )}
+
+            {!isLoadingProducts && productsError && (
+              <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-6 text-center">
+                <p className="text-sm font-medium text-rose-800">
+                  {productsError}
                 </p>
-                <p className="mt-1 text-sm text-slate-500">
-                  Check back soon, or browse the full catalogue.
-                </p>
-              </div>
-            ) : (
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                {featuredProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onAddToCart={handleAddToCart}
-                  />
-                ))}
               </div>
             )}
+
+            {!isLoadingProducts &&
+              !productsError &&
+              hasFeaturedProducts && (
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                  {featuredProducts.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      onAddToCart={handleAddToCart}
+                    />
+                  ))}
+                </div>
+              )}
+
+            {!isLoadingProducts &&
+              !productsError &&
+              !hasFeaturedProducts && (
+                <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
+                  <p className="text-sm font-semibold text-slate-900">
+                    No featured products available
+                  </p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Check back soon, or browse the full catalogue.
+                  </p>
+                </div>
+              )}
           </div>
         </div>
       </section>
