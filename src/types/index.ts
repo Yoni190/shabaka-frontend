@@ -5,15 +5,6 @@ export interface AuthUser {
   role: UserRole;
 }
 
-export interface Category {
-  id: number;
-  name: string;
-  slug: string;
-  description: string;
-  productCount: number;
-  image: string;
-}
-
 export interface Product {
   id: number;
   name: string;
