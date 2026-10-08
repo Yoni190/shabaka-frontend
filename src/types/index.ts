@@ -45,3 +45,28 @@ export interface LoginPayload {
 }
 
 export type LoginFieldErrors = Partial<Record<keyof LoginPayload, string>>;
+
+export interface Category {
+  id: number;
+  name: string;
+}
+
+export interface CategoryPaginationMeta {
+  current_page: number;
+  from: number | null;
+  last_page: number;
+  per_page: number;
+  to: number | null;
+  total: number;
+}
+
+export interface CategoryListResponse {
+  data: Category[];
+  links: {
+    first: string | null;
+    last: string | null;
+    prev: string | null;
+    next: string | null;
+  };
+  meta: CategoryPaginationMeta;
+}
