@@ -2,20 +2,55 @@ import { useEffect, useState } from "react";
 import HeroSection from "../../components/home/HeroSection";
 import ValueProposition from "../../components/home/ValueProposition";
 import CallToAction from "../../components/home/CallToAction";
-import CategoryCard from "../../components/categories/CategoryCard";
+import CategoryCard, {
+  CategoryCardSkeleton,
+} from "../../components/categories/CategoryCard";
 import ProductCard, {
   ProductCardSkeleton,
 } from "../../components/products/ProductCard";
-import { mockCategories, mockFeaturedProducts } from "../../data/mockData";
-import type { Product } from "../../types";
-
+import { getHomeCategories } from "../../api/categories";
+import { mockFeaturedProducts } from "../../data/mockData";
+import type { Category, Product } from "../../types";
 
 export default function HomePage() {
+  /* ---------- Categories (API) ---------- */
+
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [categoriesError, setCategoriesError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      setIsLoadingCategories(true);
+      setCategoriesError(null);
+      try {
+        const data = await getHomeCategories();
+        if (!cancelled) setCategories(data);
+      } catch {
+        if (!cancelled) {
+          setCategoriesError(
+            "Unable to load categories. Please try again later.",
+          );
+        }
+      } finally {
+        if (!cancelled) setIsLoadingCategories(false);
+      }
+    };
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  /* ---------- Featured products (still mocked) ---------- */
+
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
 
   useEffect(() => {
-    // Placeholder for: GET /api/products?featured=1
     const timer = window.setTimeout(() => {
       setFeaturedProducts(mockFeaturedProducts);
       setIsLoadingProducts(false);
@@ -25,9 +60,12 @@ export default function HomePage() {
   }, []);
 
   const handleAddToCart = (product: Product) => {
-    // Cart is not implemented yet — will call the cart API/context later.
     console.info("Add to cart:", product.id);
   };
+
+  /* ---------- Render ---------- */
+
+  const hasCategories = categories.length > 0;
 
   return (
     <div className="flex-1">
@@ -49,23 +87,58 @@ export default function HomePage() {
                 networks.
               </p>
             </div>
-            <a
+            {/* <a
               href="/categories"
               className="text-sm font-semibold text-blue-600 transition hover:text-blue-700"
             >
               View all categories →
-            </a>
+            </a> */}
           </div>
 
-          <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 lg:gap-6">
-            {mockCategories.map((category) => (
-              <CategoryCard key={category.id} category={category} />
-            ))}
+          <div className="mt-8">
+            {isLoadingCategories && (
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 lg:gap-6">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <CategoryCardSkeleton key={index} />
+                ))}
+              </div>
+            )}
+
+            {!isLoadingCategories && categoriesError && (
+              <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-6 text-center">
+                <p className="text-sm font-medium text-rose-800">
+                  {categoriesError}
+                </p>
+              </div>
+            )}
+
+            {!isLoadingCategories &&
+              !categoriesError &&
+              hasCategories && (
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 lg:gap-6">
+                  {categories.map((category) => (
+                    <CategoryCard key={category.id} category={category} />
+                  ))}
+                </div>
+              )}
+
+            {!isLoadingCategories &&
+              !categoriesError &&
+              !hasCategories && (
+                <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
+                  <p className="text-sm font-medium text-slate-700">
+                    No categories available.
+                  </p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Check back soon — new categories are added regularly.
+                  </p>
+                </div>
+              )}
           </div>
         </div>
       </section>
 
-      {/* Featured products */}
+      {/* Featured products (still using mockFeaturedProducts) */}
       <section className="border-b border-slate-200 bg-slate-50">
         <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
           <div className="flex flex-wrap items-end justify-between gap-4">
