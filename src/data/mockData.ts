@@ -1,52 +1,9 @@
-import type { Category, Product } from "../types";
+import type { Product } from "../types";
 
 /**
  * Mock data for the MVP. Replace with Laravel API responses later:
- *   GET /api/categories
  *   GET /api/products?featured=1
  */
-export const mockCategories: Category[] = [
-  {
-    id: 1,
-    name: "Routers",
-    slug: "routers",
-    description: "Branch, edge and enterprise routers for secure connectivity.",
-    productCount: 128,
-    image: "",
-  },
-  {
-    id: 2,
-    name: "Network Switches",
-    slug: "switches",
-    description: "Managed, unmanaged and PoE switches for every rack.",
-    productCount: 214,
-    image: "",
-  },
-  {
-    id: 3,
-    name: "Access Points",
-    slug: "access-points",
-    description: "Wi-Fi 6 and 6E access points for high-density sites.",
-    productCount: 96,
-    image: "",
-  },
-  {
-    id: 4,
-    name: "Firewalls",
-    slug: "firewalls",
-    description: "Next-generation firewalls and security appliances.",
-    productCount: 74,
-    image: "",
-  },
-  {
-    id: 5,
-    name: "Accessories",
-    slug: "accessories",
-    description: "Racks, cables, transceivers, mounts and power.",
-    productCount: 341,
-    image: "",
-  },
-];
 
 export const mockFeaturedProducts: Product[] = [
   {
