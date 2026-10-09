@@ -34,3 +34,12 @@ export async function getProducts(
   });
   return data;
 }
+
+/**
+ * Single product for the details page.
+ * Laravel wraps the payload in `{ data: {...} }`.
+ */
+export async function getProductById(id: number): Promise<Product> {
+  const { data } = await api.get<{ data: Product }>(`/products/${id}`);
+  return data.data;
+}
