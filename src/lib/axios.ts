@@ -46,3 +46,23 @@ export function isUnauthorized(
 ): error is { response: { status: 401; data: { message?: string } } } {
   return axios.isAxiosError(error) && error.response?.status === 401;
 }
+
+export function isNotFound(
+  error: unknown,
+): error is { response: { status: 404; data: { message?: string } } } {
+  return axios.isAxiosError(error) && error.response?.status === 404;
+}
+
+/** Extract a user-safe message from any error. */
+export function getErrorMessage(
+  error: unknown,
+  fallback = "Something went wrong. Please try again.",
+): string {
+  if (axios.isAxiosError(error)) {
+    const message = error.response?.data?.message;
+    if (typeof message === "string" && message.length > 0) {
+      return message;
+    }
+  }
+  return fallback;
+}
