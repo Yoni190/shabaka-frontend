@@ -8,10 +8,9 @@ interface ProductCardProps {
 
 const priceFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
-  currency: "SAR",
+  currency: "USD",
 });
 
-/** Primary image if flagged, otherwise the first, otherwise empty. */
 function pickImageUrl(product: Product): string {
   const primary = product.images.find((image) => image.is_primary);
   return (primary ?? product.images[0])?.url ?? "";
@@ -20,10 +19,16 @@ function pickImageUrl(product: Product): string {
 export default function ProductCard({ product, onAddToCart }: ProductCardProps) {
   const imageUrl = pickImageUrl(product);
   const inStock = product.is_active && product.stock_quantity > 0;
+  const detailsHref = `/products/${product.id}`;
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:border-blue-300 hover:shadow-md">
-      <div className="relative aspect-[4/3] overflow-hidden">
+      {/* Image area — its own link so the whole image is clickable */}
+      <a
+        href={detailsHref}
+        className="relative block aspect-[4/3] overflow-hidden"
+        aria-label={`View details for ${product.name}`}
+      >
         <ImageWithFallback
           src={imageUrl}
           alt={product.name}
@@ -33,17 +38,18 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
         <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-0.5 text-[11px] font-semibold text-slate-700 shadow-sm">
           {product.brand.name}
         </span>
-      </div>
+      </a>
 
       <div className="flex flex-1 flex-col p-4">
         <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
           {product.brand.name} · {product.sku}
         </p>
 
+        {/* Name — its own link to the details page */}
         <h3 className="mt-1 text-sm font-semibold leading-5 text-slate-900">
           <a
-            href={`/products/${product.id}`}
-            className="transition hover:text-blue-600"
+            href={detailsHref}
+            className="transition hover:text-blue-600 focus:outline-none focus-visible:underline"
           >
             {product.name}
           </a>
@@ -66,9 +72,10 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
             <p className="text-base font-semibold text-slate-900">
               {priceFormatter.format(Number(product.price))}
             </p>
-            <p className="text-[11px] text-slate-500">per unit · incl. tax</p>
+            <p className="text-[11px] text-slate-500">per unit · excl. tax</p>
           </div>
 
+          {/* Button is a sibling of the links — clicking it never navigates */}
           <button
             type="button"
             onClick={() => onAddToCart?.(product)}
