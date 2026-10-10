@@ -8,7 +8,7 @@ interface ProductCardProps {
 
 const priceFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
-  currency: "USD",
+  currency: "SAR",
 });
 
 function pickImageUrl(product: Product): string {
