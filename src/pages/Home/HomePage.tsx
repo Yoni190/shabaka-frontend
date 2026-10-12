@@ -2,40 +2,40 @@ import { useEffect, useState } from "react";
 import HeroSection from "../../components/home/HeroSection";
 import ValueProposition from "../../components/home/ValueProposition";
 import CallToAction from "../../components/home/CallToAction";
-import CategoryCard, {
-  CategoryCardSkeleton,
-} from "../../components/categories/CategoryCard";
+import BrandsCarousel, {
+  BrandsCarouselSkeleton,
+} from "../../components/home/BrandsCarousel";
 import ProductCard, {
   ProductCardSkeleton,
 } from "../../components/products/ProductCard";
-import { getHomeCategories } from "../../api/categories";
+import { getBrands } from "../../api/brands";
 import { getHomeProducts } from "../../api/products";
-import type { Category, Product } from "../../types";
+import type { Brand, Product } from "../../types";
 
 export default function HomePage() {
-  /* ---------- Categories (API) ---------- */
+  /* ---------- Brands (API) ---------- */
 
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
-  const [categoriesError, setCategoriesError] = useState<string | null>(null);
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [isLoadingBrands, setIsLoadingBrands] = useState(true);
+  const [brandsError, setBrandsError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     const load = async () => {
-      setIsLoadingCategories(true);
-      setCategoriesError(null);
+      setIsLoadingBrands(true);
+      setBrandsError(null);
       try {
-        const data = await getHomeCategories();
-        if (!cancelled) setCategories(data);
+        const data = await getBrands();
+        if (!cancelled) setBrands(data);
       } catch {
         if (!cancelled) {
-          setCategoriesError(
-            "Unable to load categories. Please try again later.",
+          setBrandsError(
+            "Unable to load brands. Please try again later.",
           );
         }
       } finally {
-        if (!cancelled) setIsLoadingCategories(false);
+        if (!cancelled) setIsLoadingBrands(false);
       }
     };
 
@@ -83,81 +83,59 @@ export default function HomePage() {
 
   /* ---------- Render ---------- */
 
-  const hasCategories = categories.length > 0;
+  const hasBrands = brands.length > 0;
   const hasFeaturedProducts = featuredProducts.length > 0;
 
   return (
     <div className="flex-1">
       <HeroSection />
 
-      {/* Categories */}
+      {/* Brands */}
       <section className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div className="max-w-2xl">
-              <p className="text-xs font-semibold uppercase tracking-wider text-blue-600">
-                Categories
-              </p>
-              <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-                Shop by category
-              </h2>
-              <p className="mt-2 text-sm text-slate-600">
-                Everything needed to build, upgrade and maintain business
-                networks.
-              </p>
-            </div>
-            {/* <a
-              href="/categories"
-              className="text-sm font-semibold text-blue-600 transition hover:text-blue-700"
-            >
-              View all categories →
-            </a> */}
+          <div className="max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-wider text-blue-600">
+              Brands
+            </p>
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+              Trusted names in business networking
+            </h2>
+            <p className="mt-2 text-sm text-slate-600">
+              We stock equipment from the manufacturers your infrastructure
+              already runs on.
+            </p>
           </div>
 
-          <div className="mt-8">
-            {isLoadingCategories && (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 lg:gap-6">
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <CategoryCardSkeleton key={index} />
-                ))}
-              </div>
-            )}
+          <div className="mt-10">
+            {isLoadingBrands && <BrandsCarouselSkeleton />}
 
-            {!isLoadingCategories && categoriesError && (
+            {!isLoadingBrands && brandsError && (
               <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-6 text-center">
                 <p className="text-sm font-medium text-rose-800">
-                  {categoriesError}
+                  {brandsError}
                 </p>
               </div>
             )}
 
-            {!isLoadingCategories &&
-              !categoriesError &&
-              hasCategories && (
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 lg:gap-6">
-                  {categories.map((category) => (
-                    <CategoryCard key={category.id} category={category} />
-                  ))}
-                </div>
-              )}
+            {!isLoadingBrands && !brandsError && hasBrands && (
+              <BrandsCarousel brands={brands} />
+            )}
 
-            {!isLoadingCategories &&
-              !categoriesError &&
-              !hasCategories && (
-                <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
-                  <p className="text-sm font-medium text-slate-700">
-                    No categories available.
-                  </p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Check back soon — new categories are added regularly.
-                  </p>
-                </div>
-              )}
+            {!isLoadingBrands && !brandsError && !hasBrands && (
+              <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
+                <p className="text-sm font-medium text-slate-700">
+                  No brands available.
+                </p>
+                <p className="mt-1 text-sm text-slate-500">
+                  Check back soon — new brands are added regularly.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </section>
 
-      {/* Featured products */}
+      {/* Featured products — unchanged */}
       <section className="border-b border-slate-200 bg-slate-50">
         <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
           <div className="flex flex-wrap items-end justify-between gap-4">
