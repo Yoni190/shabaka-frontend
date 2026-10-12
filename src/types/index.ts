@@ -103,3 +103,10 @@ export interface ProductListResponse {
   };
   meta: ProductPaginationMeta;
 }
+
+export interface Brand {
+  id: number;
+  name: string;
+  brand_image: string | null;
+  brand_image_url: string | null;
+}
