@@ -28,7 +28,7 @@ export default function AccountDetails() {
         <dl className="mt-4 grid gap-4 sm:grid-cols-2">
           <Field label="Full name" value={user.name} />
           <Field label="Email" value={user.email} />
-          <Field label="Phone" value={user.phone} />
+          <Field label="Phone" value={user.business.phone} />
         </dl>
       </section>
 
@@ -37,11 +37,11 @@ export default function AccountDetails() {
           Business details
         </h3>
         <dl className="mt-4 grid gap-4 sm:grid-cols-2">
-          <Field label="Business name" value={user.business_name} />
-          <Field label="VAT number" value={user.vat_number} />
+          <Field label="Business name" value={user.business.name} />
+          <Field label="VAT number" value={user.business.vat_number} />
           <Field
             label="Commercial registration"
-            value={user.commercial_registration}
+            value={user.business.commercial_registration}
           />
         </dl>
       </section>
