@@ -4,6 +4,8 @@ import ImageWithFallback from "../ui/ImageWithFallback";
 interface ProductCardProps {
   product: Product;
   onAddToCart?: (product: Product) => void;
+  /** True while this specific product is being added to the cart. */
+  isAdding?: boolean;
 }
 
 const priceFormatter = new Intl.NumberFormat("en-US", {
@@ -16,14 +18,18 @@ function pickImageUrl(product: Product): string {
   return (primary ?? product.images[0])?.url ?? "";
 }
 
-export default function ProductCard({ product, onAddToCart }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  onAddToCart,
+  isAdding = false,
+}: ProductCardProps) {
   const imageUrl = pickImageUrl(product);
   const inStock = product.is_active && product.stock_quantity > 0;
   const detailsHref = `/products/${product.id}`;
+  const disabled = !inStock || isAdding;
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:border-blue-300 hover:shadow-md">
-      {/* Image area — its own link so the whole image is clickable */}
       <a
         href={detailsHref}
         className="relative block aspect-[4/3] overflow-hidden"
@@ -45,7 +51,6 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
           {product.brand.name} · {product.sku}
         </p>
 
-        {/* Name — its own link to the details page */}
         <h3 className="mt-1 text-sm font-semibold leading-5 text-slate-900">
           <a
             href={detailsHref}
@@ -75,18 +80,47 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
             <p className="text-[11px] text-slate-500">per unit · excl. tax</p>
           </div>
 
-          {/* Button is a sibling of the links — clicking it never navigates */}
           <button
             type="button"
             onClick={() => onAddToCart?.(product)}
-            disabled={!inStock}
-            className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
+            disabled={disabled}
+            aria-busy={isAdding}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
           >
-            Add to Cart
+            {isAdding && <Spinner />}
+            {isAdding ? "Adding…" : "Add to Cart"}
           </button>
         </div>
       </div>
     </article>
+  );
+}
+
+/* ---------- Spinner ---------- */
+
+function Spinner() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className="h-3.5 w-3.5 animate-spin"
+      aria-hidden="true"
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="9"
+        stroke="currentColor"
+        strokeWidth={2.5}
+        opacity={0.25}
+      />
+      <path
+        d="M21 12a9 9 0 0 0-9-9"
+        stroke="currentColor"
+        strokeWidth={2.5}
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
 

@@ -11,6 +11,10 @@ import ProductCard, {
 import { getBrands } from "../../api/brands";
 import { getHomeProducts } from "../../api/products";
 import type { Brand, Product } from "../../types";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
+import { useCart } from "../../hooks/useCart";
+
 
 export default function HomePage() {
   /* ---------- Brands (API) ---------- */
@@ -18,6 +22,11 @@ export default function HomePage() {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [isLoadingBrands, setIsLoadingBrands] = useState(true);
   const [brandsError, setBrandsError] = useState<string | null>(null);
+
+  const { isAuthenticated } = useAuth();
+  const { addItem, isAddingProductId } = useCart();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     let cancelled = false;
@@ -77,8 +86,16 @@ export default function HomePage() {
     };
   }, []);
 
-  const handleAddToCart = (product: Product) => {
-    console.info("Add to cart:", product.id);
+  const handleAddToCart = async (product: Product) => {
+    if (!isAuthenticated) {
+      navigate("/login", { state: { from: location.pathname } });
+      return;
+    }
+    try {
+      await addItem(product.id, 1);
+    } catch {
+      console.error('Somthing went wrong')
+    }
   };
 
   /* ---------- Render ---------- */
@@ -184,6 +201,7 @@ export default function HomePage() {
                       key={product.id}
                       product={product}
                       onAddToCart={handleAddToCart}
+                      isAdding={isAddingProductId === product.id}
                     />
                   ))}
                 </div>

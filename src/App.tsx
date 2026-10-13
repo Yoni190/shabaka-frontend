@@ -13,6 +13,7 @@ import AccountDetails from './pages/Account/AccountDetails'
 import AccountAddresses from './pages/Account/AccountAddresses'
 import AccountOrders from './pages/Account/AccountOrders'
 import AccountSecurity from './pages/Account/AccountSecurity'
+import CartPage from './pages/Cart/CartPage'
 
 function App() {
   return (
@@ -38,6 +39,15 @@ function App() {
           <Route path="orders" element={<AccountOrders />} />
           <Route path="security" element={<AccountSecurity />} />
         </Route>
+
+        <Route
+          path="/cart"
+          element={
+            <RequireAuth>
+              <CartPage />
+            </RequireAuth>
+          }
+        />
 
         <Route path="*" element={<NotFoundPage />} />
       </Route>

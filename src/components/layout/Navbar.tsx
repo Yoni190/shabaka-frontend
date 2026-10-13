@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
-
-interface NavbarProps {
-  cartCount?: number;
-}
+import { Link } from "react-router-dom";
+import { useCart } from "../../hooks/useCart";
 
 const navLinks = [
   { label: "Products", href: "/products" },
@@ -16,8 +14,9 @@ const accountLinks = [
   { label: "Quotes", href: "/account/quotes" },
 ];
 
-export default function Navbar({ cartCount = 0 }: NavbarProps) {
+export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
+  const { itemCount } = useCart();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
 
@@ -102,18 +101,18 @@ export default function Navbar({ cartCount = 0 }: NavbarProps) {
 
         <div className="ml-auto flex items-center gap-2">
           {/* Cart */}
-          <a
-            href="/cart"
+          <Link
+            to="/cart"
             className="relative rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
           >
             <span className="sr-only">Cart</span>
             <CartIcon className="h-5 w-5" />
-            {cartCount > 0 && (
+            {itemCount > 0 && (
               <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-600 px-1 text-[11px] font-semibold text-white">
-                {cartCount}
+                {itemCount}
               </span>
             )}
-          </a>
+          </Link>
 
           {/* Desktop auth */}
           {isAuthenticated && user ? (

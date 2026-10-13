@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import ProductImageGallery from "../../components/products/ProductImageGallery";
 import { getProductById } from "../../api/products";
 import { getErrorMessage, isNotFound } from "../../lib/axios";
+import { useAuth } from "../../hooks/useAuth";
+import { useCart } from "../../hooks/useCart";
 import type { Product } from "../../types";
 
 const priceFormatter = new Intl.NumberFormat("en-US", {
@@ -19,6 +21,11 @@ type Status =
 export default function ProductDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const productId = Number(id);
+
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { isAuthenticated } = useAuth();
+  const { addItem, isAddingProductId } = useCart();
 
   const [status, setStatus] = useState<Status>({ kind: "loading" });
 
@@ -51,8 +58,16 @@ export default function ProductDetailsPage() {
     void load();
   }, [load]);
 
-  const handleAddToCart = (product: Product) => {
-    console.info("Add to cart:", product.id);
+  const handleAddToCart = async (product: Product) => {
+    if (!isAuthenticated) {
+      navigate("/login", { state: { from: location.pathname } });
+      return;
+    }
+    try {
+      await addItem(product.id, 1);
+    } catch {
+      // CartContext already surfaces a toast on failure.
+    }
   };
 
   /* ---------- Non-loaded states ---------- */
@@ -118,25 +133,27 @@ export default function ProductDetailsPage() {
 
   const { product } = status;
   const inStock = product.is_active && product.stock_quantity > 0;
+  const isAdding = isAddingProductId === product.id;
+  const isButtonDisabled = !inStock || isAdding;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
       {/* Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="text-xs text-slate-500">
-        <ol className="flex flex-wrap items-center gap-1.5">
-          <li>
+      <nav aria-label="Breadcrumb" className="min-w-0 text-xs text-slate-500">
+        <ol className="flex min-w-0 flex-wrap items-center gap-1.5">
+          <li className="shrink-0">
             <a href="/" className="transition hover:text-slate-700">
               Home
             </a>
           </li>
-          <li aria-hidden="true">/</li>
-          <li>
+          <li aria-hidden="true" className="shrink-0">/</li>
+          <li className="shrink-0">
             <a href="/products" className="transition hover:text-slate-700">
               Products
             </a>
           </li>
-          <li aria-hidden="true">/</li>
-          <li>
+          <li aria-hidden="true" className="shrink-0">/</li>
+          <li className="shrink-0">
             <a
               href={`/products?category_id=${product.category.id}`}
               className="transition hover:text-slate-700"
@@ -144,8 +161,11 @@ export default function ProductDetailsPage() {
               {product.category.name}
             </a>
           </li>
-          <li aria-hidden="true">/</li>
-          <li aria-current="page" className="truncate font-medium text-slate-700">
+          <li aria-hidden="true" className="shrink-0">/</li>
+          <li
+            aria-current="page"
+            className="min-w-0 max-w-full truncate font-medium text-slate-700"
+          >
             {product.name}
           </li>
         </ol>
@@ -153,19 +173,16 @@ export default function ProductDetailsPage() {
 
       <div className="mt-6 grid gap-8 lg:grid-cols-2 lg:gap-12">
         {/* Left — images */}
-        <div>
-          <ProductImageGallery
-            images={product.images}
-            alt={product.name}
-          />
+        <div className="min-w-0">
+          <ProductImageGallery images={product.images} alt={product.name} />
         </div>
 
         {/* Right — info */}
-        <div>
+        <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-wider text-blue-600">
             {product.brand.name}
           </p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+          <h1 className="mt-2 break-words text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
             {product.name}
           </h1>
 
@@ -199,7 +216,9 @@ export default function ProductDetailsPage() {
                 }`}
                 aria-hidden="true"
               />
-              {inStock ? `In stock · ${product.stock_quantity} units` : "Out of stock"}
+              {inStock
+                ? `In stock · ${product.stock_quantity} units`
+                : "Out of stock"}
             </span>
           </div>
 
@@ -219,10 +238,16 @@ export default function ProductDetailsPage() {
             <button
               type="button"
               onClick={() => handleAddToCart(product)}
-              disabled={!inStock}
-              className="inline-flex flex-1 items-center justify-center rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
+              disabled={isButtonDisabled}
+              aria-busy={isAdding}
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
             >
-              {inStock ? "Add to Cart" : "Out of stock"}
+              {isAdding && <Spinner />}
+              {isAdding
+                ? "Adding…"
+                : inStock
+                  ? "Add to Cart"
+                  : "Out of stock"}
             </button>
             <a
               href="/products"
@@ -237,6 +262,34 @@ export default function ProductDetailsPage() {
   );
 }
 
+/* ---------- Spinner ---------- */
+
+function Spinner() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className="h-4 w-4 animate-spin"
+      aria-hidden="true"
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="9"
+        stroke="currentColor"
+        strokeWidth={2.5}
+        opacity={0.25}
+      />
+      <path
+        d="M21 12a9 9 0 0 0-9-9"
+        stroke="currentColor"
+        strokeWidth={2.5}
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 /* ---------- Loading skeleton ---------- */
 
 function DetailsSkeleton() {
@@ -245,7 +298,7 @@ function DetailsSkeleton() {
       <div className="h-3 w-64 animate-pulse rounded bg-slate-100" />
 
       <div className="mt-6 grid gap-8 lg:grid-cols-2 lg:gap-12">
-        <div>
+        <div className="min-w-0">
           <div className="aspect-[4/3] animate-pulse rounded-lg bg-slate-100" />
           <div className="mt-3 flex gap-2">
             {Array.from({ length: 4 }).map((_, index) => (
@@ -257,7 +310,7 @@ function DetailsSkeleton() {
           </div>
         </div>
 
-        <div className="space-y-5">
+        <div className="min-w-0 space-y-5">
           <div className="h-3 w-24 animate-pulse rounded bg-slate-100" />
           <div className="h-8 w-3/4 animate-pulse rounded bg-slate-100" />
           <div className="h-4 w-48 animate-pulse rounded bg-slate-100" />

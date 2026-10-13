@@ -11,9 +11,9 @@ import Footer from "./Footer";
 export default function RootLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-slate-50">
-      <Navbar cartCount={0} />
+      <Navbar />
 
-      <main className="flex flex-1 flex-col">
+      <main className="flex min-w-0 flex-1 flex-col">
         <Outlet />
       </main>
 
