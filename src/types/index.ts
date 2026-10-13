@@ -3,6 +3,11 @@ export type UserRole = "admin" | "business_customer";
 export interface AuthUser {
   name: string;
   role: UserRole;
+  email?: string;
+  phone?: string;
+  business_name?: string;
+  vat_number?: string;
+  commercial_registration?: string;
 }
 
 export interface RegisterPayload {
