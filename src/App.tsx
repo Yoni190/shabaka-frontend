@@ -6,6 +6,13 @@ import LoginPage from './pages/Login/LoginPage'
 import ProductsPage from "./pages/Products/ProductsPage";
 import ProductDetailsPage from "./pages/Products/ProductDetailsPage";
 import RootLayout from './components/layout/RootLayout'
+import RequireAuth from './components/auth/RequireAuth'
+import AccountLayout from './pages/Account/AccountLayout'
+import AccountOverview from './pages/Account/AccountOverview'
+import AccountDetails from './pages/Account/AccountDetails'
+import AccountAddresses from './pages/Account/AccountAddresses'
+import AccountOrders from './pages/Account/AccountOrders'
+import AccountSecurity from './pages/Account/AccountSecurity'
 
 function App() {
   return (
@@ -16,6 +23,21 @@ function App() {
         <Route path="/products/:id" element={<ProductDetailsPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
+
+        <Route
+          path="/account"
+          element={
+            <RequireAuth>
+              <AccountLayout />
+            </RequireAuth>
+          }
+        >
+          <Route index element={<AccountOverview />} />
+          <Route path="details" element={<AccountDetails />} />
+          <Route path="addresses" element={<AccountAddresses />} />
+          <Route path="orders" element={<AccountOrders />} />
+          <Route path="security" element={<AccountSecurity />} />
+        </Route>
 
         <Route path="*" element={<NotFoundPage />} />
       </Route>
