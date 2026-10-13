@@ -7,9 +7,7 @@ export default function AccountOverview() {
   if (!user) return null;
 
   const initial = user.name.charAt(0).toUpperCase();
-  const roleLabel =
-    user.role === "admin" ? "Administrator" : "Business customer";
-    //Fix: only business customer can access this page
+  const roleLabel = "Business Customer";
 
   return (
     <div className="space-y-8">
