@@ -14,6 +14,8 @@ import AccountAddresses from './pages/Account/AccountAddresses'
 import AccountOrders from './pages/Account/AccountOrders'
 import AccountSecurity from './pages/Account/AccountSecurity'
 import CartPage from './pages/Cart/CartPage'
+import CheckoutPage from './pages/Checkout/CheckoutPage'
+import OrderConfirmationPage from './pages/Checkout/OrderConfirmationPage'
 
 function App() {
   return (
@@ -45,6 +47,23 @@ function App() {
           element={
             <RequireAuth>
               <CartPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/checkout"
+          element={
+            <RequireAuth>
+              <CheckoutPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/checkout/confirmation"
+          element={
+            <RequireAuth>
+              <OrderConfirmationPage />
             </RequireAuth>
           }
         />
