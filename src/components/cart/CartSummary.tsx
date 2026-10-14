@@ -29,14 +29,12 @@ export default function CartSummary({ subtotal }: CartSummaryProps) {
       </p>
 
       <div className="mt-6 space-y-3">
-        <button
-          type="button"
-          disabled
-          title="Checkout is not available yet."
-          className="inline-flex w-full items-center justify-center rounded-lg bg-slate-200 px-6 py-3 text-sm font-semibold text-slate-500 cursor-not-allowed"
+        <Link
+          to="/checkout"
+          className="inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
         >
-          Checkout — coming soon
-        </button>
+          Proceed to checkout
+        </Link>
         <Link
           to="/products"
           className="inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
