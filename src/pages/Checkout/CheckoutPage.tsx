@@ -5,7 +5,6 @@ import { createOrder } from "../../api/orders";
 import { getErrorMessage, isValidationError } from "../../lib/axios";
 import { useCart } from "../../hooks/useCart";
 import type { Address } from "../../types/address";
-import type { Order } from "../../types/order";
 
 const priceFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",

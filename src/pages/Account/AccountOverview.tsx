@@ -4,8 +4,9 @@ import { useAuth } from "../../hooks/useAuth";
 export default function AccountOverview() {
   const { user } = useAuth();
 
-  if (!user) return null;
+  if (!user || !user.business) return null;
 
+  const business = user.business;
   const initial = user.name.charAt(0).toUpperCase();
   const roleLabel = "Business Customer";
 
@@ -48,7 +49,7 @@ export default function AccountOverview() {
         <dl className="mt-4 grid gap-4 sm:grid-cols-2">
           <Field label="Full name" value={user.name} />
           <Field label="Email" value={user.email} />
-          <Field label="Phone" value={user.business.phone} />
+          <Field label="Phone" value={business.phone} />
         </dl>
       </section>
 
@@ -61,11 +62,11 @@ export default function AccountOverview() {
         </div>
 
         <dl className="mt-4 grid gap-4 sm:grid-cols-2">
-          <Field label="Business name" value={user.business.name} />
-          <Field label="VAT number" value={user.business.vat_number} />
+          <Field label="Business name" value={business.name} />
+          <Field label="VAT number" value={business.vat_number} />
           <Field
             label="Commercial registration"
-            value={user.business.commercial_registration}
+            value={business.commercial_registration}
           />
         </dl>
       </section>
