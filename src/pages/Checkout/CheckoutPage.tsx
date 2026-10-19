@@ -4,7 +4,9 @@ import { getAddresses } from "../../api/addresses";
 import { createOrder } from "../../api/orders";
 import { getErrorMessage, isValidationError } from "../../lib/axios";
 import { useCart } from "../../hooks/useCart";
+import MoyasarPaymentForm from "../../components/checkout/MoyasarPaymentForm";
 import type { Address } from "../../types/address";
+import type { Order } from "../../types/order";
 
 const priceFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -24,7 +26,6 @@ export default function CheckoutPage() {
   const { cart, refresh: refreshCart } = useCart();
 
   /* ---------- Addresses ---------- */
-
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(true);
   const [addressesError, setAddressesError] = useState<string | null>(null);
@@ -49,7 +50,6 @@ export default function CheckoutPage() {
   }, [fetchAddresses]);
 
   /* ---------- Form state ---------- */
-
   const [shippingAddressId, setShippingAddressId] = useState<number | null>(
     null,
   );
@@ -62,6 +62,22 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+
+  /* ---------- Created order / payment step ---------- */
+  const [createdOrder, setCreatedOrder] = useState<Order | null>(null);
+  const [paymentInitiated, setPaymentInitiated] = useState(false);
+
+  // Restore an order that was created before a page refresh.
+  useEffect(() => {
+    const stored = sessionStorage.getItem("last_order");
+    if (!stored) return;
+    try {
+      const order = JSON.parse(stored) as Order;
+      setCreatedOrder(order);
+    } catch {
+      sessionStorage.removeItem("last_order");
+    }
+  }, []);
 
   // Pre-select the first shipping address once addresses load.
   useEffect(() => {
@@ -86,7 +102,6 @@ export default function CheckoutPage() {
   }, [billingSameAsShipping, addresses, billingAddressId]);
 
   /* ---------- Submit ---------- */
-
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -120,20 +135,16 @@ export default function CheckoutPage() {
         notes: notes.trim() || null,
       });
 
-      // Persist for the confirmation page so a refresh doesn't lose the order.
+      // Persist the order so a refresh keeps the payment step available.
       try {
         sessionStorage.setItem("last_order", JSON.stringify(order));
       } catch {
-        // Quota or disabled storage — non-fatal.
+        // Non-fatal.
       }
 
       // Backend clears the cart on success; sync our context.
       await refreshCart();
-
-      navigate("/checkout/confirmation", {
-        replace: true,
-        state: { order },
-      });
+      setCreatedOrder(order);
     } catch (err) {
       if (isValidationError(err)) {
         const errors = err.response.data.errors;
@@ -142,8 +153,6 @@ export default function CheckoutPage() {
           billing_address_id: errors.billing_address_id?.[0],
           notes: errors.notes?.[0],
         });
-        // Empty-cart and stock errors often arrive as a top-level message
-        // or under a non-field key (`cart`, `items`, `stock`).
         const topLevel =
           err.response.data.message ??
           errors.cart?.[0] ??
@@ -164,11 +173,64 @@ export default function CheckoutPage() {
   };
 
   /* ---------- Guards ---------- */
-
   const isEmptyCart = cart !== null && cart.items.length === 0;
   const hasNoAddresses =
     !isLoadingAddresses && !addressesError && addresses.length === 0;
 
+  /* ---------- Payment step ---------- */
+  if (createdOrder) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+        <p className="text-xs font-semibold uppercase tracking-wider text-blue-600">
+          Payment
+        </p>
+        <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+          Complete payment
+        </h1>
+        <p className="mt-2 text-sm text-slate-600">
+          Order{" "}
+          <span className="font-mono font-semibold">
+            {createdOrder.order_number}
+          </span>{" "}
+          has been created. Enter your card details to pay{" "}
+          <span className="font-semibold">
+            {priceFormatter.format(Number(createdOrder.total_amount))}
+          </span>
+          .
+        </p>
+
+        {paymentInitiated && (
+          <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            Payment has been initiated. If you were redirected away, complete
+            the verification step — your order will update once confirmed.
+          </div>
+        )}
+
+        <div className="mt-8 rounded-xl border border-slate-200 bg-white p-5 sm:p-6">
+          <MoyasarPaymentForm
+            amount={Number(createdOrder.total_amount)}
+            description={`Order ${createdOrder.order_number}`}
+            orderId={createdOrder.id}
+            onPaymentInitiated={() => setPaymentInitiated(true)}
+          />
+        </div>
+
+        <p className="mt-6 text-center text-xs text-slate-500">
+          You can close this page only after payment is verified. Your order
+          is not marked as paid until the payment is confirmed by the backend.
+        </p>
+
+        <Link
+          to="/products"
+          className="mt-6 inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-6 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+        >
+          Continue shopping
+        </Link>
+      </div>
+    );
+  }
+
+  /* ---------- Standard checkout form ---------- */
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
       <p className="text-xs font-semibold uppercase tracking-wider text-blue-600">
@@ -178,10 +240,9 @@ export default function CheckoutPage() {
         Complete your order
       </h1>
       <p className="mt-2 text-sm text-slate-600">
-        Confirm your shipping details and review your order before placing it.
+        Confirm your shipping details and review your order before paying.
       </p>
 
-      {/* Guards */}
       {isEmptyCart && (
         <div className="mt-10 rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
           <p className="text-sm font-semibold text-slate-900">
@@ -229,14 +290,6 @@ export default function CheckoutPage() {
                 className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
               >
                 <p>{submitError}</p>
-                {isEmptyCart && (
-                  <Link
-                    to="/cart"
-                    className="mt-2 inline-block font-semibold text-rose-800 underline hover:text-rose-900"
-                  >
-                    Review your cart
-                  </Link>
-                )}
               </div>
             )}
 
@@ -414,9 +467,8 @@ export default function CheckoutPage() {
               </dl>
 
               <p className="mt-4 rounded-lg bg-slate-50 px-3 py-2 text-xs leading-5 text-slate-500">
-                Taxes, shipping, and discounts are calculated by the backend
-                when your order is placed. The final total may differ slightly
-                from the subtotal above.
+                The total payable is calculated by the backend when your order
+                is created. Payment is taken on the next step.
               </p>
 
               <button
@@ -426,7 +478,7 @@ export default function CheckoutPage() {
                 className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
               >
                 {isSubmitting && <Spinner />}
-                {isSubmitting ? "Placing order…" : "Place order"}
+                {isSubmitting ? "Creating order…" : "Continue to payment"}
               </button>
 
               <Link
@@ -444,7 +496,6 @@ export default function CheckoutPage() {
 }
 
 /* ---------- Address option ---------- */
-
 interface AddressOptionProps {
   address: Address;
   name: string;
@@ -497,9 +548,7 @@ function AddressOption({
               <span className="text-slate-500"> · {address.company_name}</span>
             )}
           </p>
-          <p className="mt-0.5 text-xs text-slate-500">
-            {address.phone}
-          </p>
+          <p className="mt-0.5 text-xs text-slate-500">{address.phone}</p>
           <address className="mt-1 not-italic text-xs leading-5 text-slate-500">
             {[
               address.address_line_1,
@@ -519,7 +568,6 @@ function AddressOption({
 }
 
 /* ---------- Spinner ---------- */
-
 function Spinner() {
   return (
     <svg
