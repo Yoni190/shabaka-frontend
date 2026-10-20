@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { getAddresses } from "../../api/addresses";
 import { createOrder } from "../../api/orders";
 import { getErrorMessage, isValidationError } from "../../lib/axios";
@@ -22,7 +22,6 @@ interface FieldErrors {
 }
 
 export default function CheckoutPage() {
-  const navigate = useNavigate();
   const { cart, refresh: refreshCart } = useCart();
 
   /* ---------- Addresses ---------- */
