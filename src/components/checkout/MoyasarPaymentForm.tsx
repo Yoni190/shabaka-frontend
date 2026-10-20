@@ -129,7 +129,7 @@ export default function MoyasarPaymentForm({
           publishable_api_key: publishableKey,
           callback_url: `${window.location.origin}/checkout/callback?order_id=${orderId}`,
           supported_networks: ["visa", "mastercard", "mada"],
-          methods: ["applepay"],
+          methods: ["creditcard", "applepay"],
           apple_pay: {
             country: "SA",
             label: "Shabaka",
