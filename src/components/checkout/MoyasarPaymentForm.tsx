@@ -124,7 +124,7 @@ export default function MoyasarPaymentForm({
           publishable_api_key: publishableKey,
           callback_url: `${window.location.origin}/checkout/callback?order_id=${orderId}`,
           supported_networks: ["visa", "mastercard", "mada"],
-          methods: ["creditcard"],
+          methods: ["creditcard", "applepay"],
           on_completed: async (payment) => {
             // Keep the payment ID for resilience (e.g. 3-D Secure drop-off).
             // This is NOT proof of payment; the callback page must verify
