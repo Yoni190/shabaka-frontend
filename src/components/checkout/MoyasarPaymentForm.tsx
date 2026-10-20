@@ -20,7 +20,6 @@ interface MoyasarConfig {
   apple_pay?: {
     country: string;
     label: string;
-    validate_merchant_url: string;
   };
   on_completed?: (payment: { id: string }) => void | Promise<void>;
 }
@@ -133,7 +132,6 @@ export default function MoyasarPaymentForm({
           apple_pay: {
             country: "SA",
             label: "Shabaka",
-            validate_merchant_url: "https://api.moyasar.com/v1/applepay/initiate",
           },
           on_completed: async (payment) => {
             // Keep the payment ID for resilience (e.g. 3-D Secure drop-off).
