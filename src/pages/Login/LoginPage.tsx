@@ -10,6 +10,11 @@ const emptyForm: LoginPayload = {
   password: "",
 };
 
+const DEMO_CREDENTIALS: LoginPayload = {
+  email: "test@gmail.com",
+  password: "Aa123456",
+};
+
 export default function LoginPage() {
   const [form, setForm] = useState<LoginPayload>(emptyForm);
   const [fieldErrors, setFieldErrors] = useState<LoginFieldErrors>({});
@@ -29,14 +34,13 @@ export default function LoginPage() {
     });
   };
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const performLogin = async (credentials: LoginPayload) => {
     setIsSubmitting(true);
     setFormError(null);
     setFieldErrors({});
 
     try {
-      await login(form);
+      await login(credentials);
       navigate("/");
     } catch (error) {
       if (isValidationError(error)) {
@@ -48,15 +52,23 @@ export default function LoginPage() {
         setFieldErrors(flattened);
         setFormError(message ?? "Please correct the highlighted fields.");
       } else if (isUnauthorized(error)) {
-        setFormError(
-          error.response.data.message ?? "Invalid email or password.",
-        );
+        setFormError(error.response.data.message ?? "Invalid email or password.");
       } else {
         setFormError("We couldn't sign you in right now. Please try again.");
       }
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    performLogin(form);
+  };
+
+  const handleDemoLogin = () => {
+    setForm(DEMO_CREDENTIALS);   // keep the visual fill-in
+    performLogin(DEMO_CREDENTIALS);
   };
 
   return (
@@ -123,6 +135,15 @@ export default function LoginPage() {
             >
               {isSubmitting ? "Signing in…" : "Sign in"}
             </button>
+
+              <button
+                type="button"
+                onClick={handleDemoLogin}
+                disabled={isSubmitting}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <span>Use Demo Account</span>
+              </button>
           </form>
 
           <p className="mt-8 text-center text-sm text-slate-600">
